@@ -1,0 +1,24 @@
+{
+	"name": "tabstrip-dreamland",
+	"version": "0.0.1",
+	"description": "",
+	"keywords": [],
+	"author": "r58playz",
+	"scripts": {
+		"build": "bash chrome/build.sh; rollup -c",
+		"watch": "bash chrome/build.sh; rollup -cw",
+		"postinstall": "npm run build"
+	},
+	"type": "module",
+	"license": "LGPL-3.0",
+	"exports": {
+		"import": "./dist/index.js"
+	},
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"devDependencies": {
+		"dreamland": "0.0.24",
+		"rollup": "^4.24.0",
+		"rollup-plugin-typescript2": "^0.36.0"
+	}
+}
