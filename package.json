@@ -5,8 +5,9 @@
 	"keywords": [],
 	"author": "r58playz",
 	"scripts": {
-		"build": "bash chrome/build.sh; rollup -c",
-		"watch": "bash chrome/build.sh; rollup -cw",
+		"chromeBuild": "bash chrome/build.sh",
+		"build": "rollup -c",
+		"watch": "rollup -cw",
 		"postinstall": "npm run build"
 	},
 	"type": "module",

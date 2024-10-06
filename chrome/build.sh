@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+TAG="131.0.6753.0"
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 cd "$SCRIPT_DIR"
 
 download_gitiles() {
-	wget -O - "https://chromium.googlesource.com/chromium/src/+/main/$1?format=TEXT" | base64 -d > "$2"
+	wget -O - "https://chromium.googlesource.com/chromium/src/+/refs/tags/$TAG/$1?format=TEXT" | base64 -d > "$2"
 }
 
 rm -r in out || true
 mkdir in
 
-wget https://chromium.googlesource.com/chromium/src/+archive/main/chrome/browser/resources/tab_strip.tar.gz
+wget "https://chromium.googlesource.com/chromium/src/+archive/refs/tags/$TAG/chrome/browser/resources/tab_strip.tar.gz"
 
 cd in || exit 1
 tar xvf ../tab_strip.tar.gz
@@ -42,5 +44,8 @@ download_gitiles ui/webui/resources/js/util.ts out/util.ts
 sed -i '/.*ColorChangeUpdater/d' out/tab_list.ts
 
 cp ../src/icon.ts out/
+cp ../src/tab_strip.mojom-webui.ts out/
+cp ../src/tabs.mojom-webui.ts out/
+cp ../src/tabs_api_proxy.ts out/
 
 rm -r in
