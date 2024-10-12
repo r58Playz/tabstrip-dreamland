@@ -16,9 +16,9 @@ export type Tab = {
 	alertStates: TabAlertState[],
 	blocked: boolean,
 	crashed: boolean,
-	faviconUrl?: Url,
-	activeFaviconUrl?: Url,
-	groupId?: string,
+	faviconUrl: Url | null,
+	activeFaviconUrl: Url | null,
+	groupId: string | null,
 	id: number,
 	index: number,
 	isDefaultFavicon: boolean,
@@ -86,7 +86,7 @@ export class Listener3<A, B, C> {
 
 export class PageCallbackRouter {
 	layoutChanged: Listener1<{ [key: string]: string }> = new Listener1();
-	recievedKeyboardFocus: Listener0 = new Listener0();
+	receivedKeyboardFocus: Listener0 = new Listener0();
 	contextMenuClosed: Listener0 = new Listener0();
 	longPress: Listener0 = new Listener0();
 	tabGroupVisualsChanged: Listener2<string, TabGroupVisualData> = new Listener2();

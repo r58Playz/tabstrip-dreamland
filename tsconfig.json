@@ -1,12 +1,13 @@
 {
 	"compilerOptions": {
+		"declaration": true,
 		"target": "esnext",
 		"module": "esnext",
 		"jsx": "react",
 		"jsxFactory": "h",
 		"jsxFragmentFactory": "Fragment",
 		"types": [
-			"dreamland"
+			"trusted-types"
 		]
 	},
 	"include": [

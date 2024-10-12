@@ -8,8 +8,20 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "$SCRIPT_DIR"
 
 download_gitiles() {
-	wget -O - "https://chromium.googlesource.com/chromium/src/+/refs/tags/$TAG/$1?format=TEXT" | base64 -d > "$2"
+	wget -O - "https://chromium.googlesource.com/chromium/src/+/refs/tags/$TAG/$1?format=TEXT" | base64 -d >> "$2"
 }
+
+copy_files() {
+	cp ../src/icon.ts out/
+	cp ../src/tab_strip.mojom-webui.ts out/
+	cp ../src/tabs.mojom-webui.ts out/
+	cp ../src/tabs_api_proxy.ts out/
+}
+
+if [ "${1:-}" == "copyonly" ]; then
+	copy_files
+	exit
+fi
 
 rm -r in out || true
 mkdir in
@@ -30,22 +42,20 @@ done
 
 cp -r in/alert_indicators out/
 
-sed -i 's/chrome:\/\/resources\/js/./' out/*.ts
-sed -i 's/\/\/resources\/js/./' out/*.ts
+sed -i -e 's/chrome:\/\/resources\/js/./' -e 's/\/\/resources\/js/./' -e '/\.\/strings\.m\.js/d' out/*.ts
 
 download_gitiles ui/webui/resources/js/assert.ts out/assert.ts
+echo "// @ts-nocheck" > out/custom_element.ts
 download_gitiles ui/webui/resources/js/custom_element.ts out/custom_element.ts
 download_gitiles ui/webui/resources/js/event_tracker.ts out/event_tracker.ts
 download_gitiles ui/webui/resources/js/focus_outline_manager.ts out/focus_outline_manager.ts
 download_gitiles ui/webui/resources/js/load_time_data.ts out/load_time_data.ts
+echo "// @ts-nocheck" > out/static_types.ts
 download_gitiles ui/webui/resources/js/static_types.ts out/static_types.ts
 download_gitiles ui/webui/resources/js/util.ts out/util.ts
 
 sed -i '/.*ColorChangeUpdater/d' out/tab_list.ts
 
-cp ../src/icon.ts out/
-cp ../src/tab_strip.mojom-webui.ts out/
-cp ../src/tabs.mojom-webui.ts out/
-cp ../src/tabs_api_proxy.ts out/
+copy_files
 
 rm -r in
