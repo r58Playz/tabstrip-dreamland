@@ -1,4 +1,13 @@
+// @ts-ignore
+import { loadTimeData } from "./load_time_data.js";
 import { Tab, TabGroupVisualData, PageCallbackRouter } from "./tab_strip.mojom-webui.js";
+
+const STRINGS = {
+	closeTab: "Close tab",
+	defaultTabTitle: "Tab",
+	tabGroupIdDataType: "application/group-id",
+	tabIdDataType: "application/tab-id",
+}
 
 export enum CloseTabAction {
 	CLOSE_BUTTON = 0,
@@ -65,11 +74,11 @@ export interface TabsApiProxy {
 let TABS_PROXY_SINGLETON: TabsApiProxyImpl | null = null;
 
 export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
-	private tabId: number = 0;
-	private tabs: Map<number, Tab> = new Map();
-	private callbackRouter: PageCallbackRouter = new PageCallbackRouter();
+	tabId: number = 0;
+	tabs: Map<number, Tab> = new Map();
+	callbackRouter: PageCallbackRouter = new PageCallbackRouter();
 
-	private visibleHandler: () => boolean;
+	visibleHandler: () => boolean;
 
 	constructor(isVisible: () => boolean) {
 		super()
@@ -78,7 +87,10 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 
 	static createInstance(isVisible: () => boolean): TabsApiProxyImpl {
 		if (TABS_PROXY_SINGLETON) throw new Error("TabsApiProxyImpl already created.");
+
+		loadTimeData.data = STRINGS;
 		TABS_PROXY_SINGLETON = new TabsApiProxyImpl(isVisible);
+
 		return TABS_PROXY_SINGLETON;
 	}
 
@@ -90,6 +102,15 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 	dispatch(name: string, data: any) {
 		this.dispatchEvent(new CustomEvent(name, { detail: data }));
 	}
+
+	addTab(tab: Tab) {
+		tab.id = this.tabId;
+		this.tabs.set(this.tabId, tab);
+		this.tabId++;
+		this.callbackRouter.tabCreated.notify(tab);
+	}
+
+	// TabsApiProxy
 
 	activateTab(tabId: number): void {
 		if (!this.tabs.has(tabId)) throw new Error("Invalid tab.");
@@ -123,6 +144,8 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 	}
 
 	moveTab(tabId: number, newIndex: number): void {
+		if (!this.tabs.has(tabId)) throw new Error("Invalid tab.");
+		this.tabs.get(tabId).index = newIndex;
 		this.dispatch("moveTab", { tab: tabId, index: newIndex });
 	}
 
