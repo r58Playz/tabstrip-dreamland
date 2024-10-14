@@ -23,7 +23,7 @@ if [ "${1:-}" == "copyonly" ]; then
 	exit
 fi
 
-rm -r in out || true
+rm -r in in2 grit out || true
 mkdir in in2 grit
 
 wget "https://chromium.googlesource.com/chromium/src/+archive/refs/tags/$TAG/chrome/browser/resources/tab_strip.tar.gz"
@@ -64,6 +64,8 @@ echo "// @ts-nocheck" > out/static_types.ts
 download_gitiles ui/webui/resources/js/static_types.ts out/static_types.ts
 
 sed -i '/.*ColorChangeUpdater/d' out/tab_list.ts
+sed -i "s|chrome://theme/IDR_CRASH_SAD_FAVICON@2x|data:image/png;base64,$(base64 -w0 IDR_CRASH_SAD_FAVICON@2x.png)|" out/tab.html.ts
+sed -i "s|chrome://resources/images/icon_clear.svg|data:image/svg+xml;base64,$(base64 -w0 icon_clear.svg)|" out/tab.html.ts
 
 copy_files
 
