@@ -24,7 +24,7 @@ if [ "${1:-}" == "copyonly" ]; then
 fi
 
 rm -r in out || true
-mkdir in
+mkdir in in2 grit
 
 wget "https://chromium.googlesource.com/chromium/src/+archive/refs/tags/$TAG/chrome/browser/resources/tab_strip.tar.gz"
 
@@ -33,11 +33,21 @@ tar xvf ../tab_strip.tar.gz
 cd .. || exit 1
 rm tab_strip.tar.gz
 
-# maybe extract this from BUILD.gn
-python3 html_to_wrapper.py --in_folder in --out_folder out --template native --in_files alert_indicator.html alert_indicators.html tab_group.html tab_list.html tab.html
+wget "https://chromium.googlesource.com/chromium/src/+archive/refs/tags/$TAG/tools/grit.tar.gz"
+cd grit || exit 1
+tar xvf ../grit.tar.gz
+cd .. || exit 1
+rm grit.tar.gz
 
-for file in alert_indicator.ts alert_indicators.ts tab_group.ts tab_list.ts tab.ts drag_manager.ts tab_swiper.ts tab_strip.html; do
-	cp "in/$file" "out/$file"
+download_gitiles ui/webui/resources/js/util.ts in/util.ts
+cp -r in/* in2/
+python3 grit/preprocess_if_expr.py --in-folder in --out-folder in2 --in-files drag_manager.ts tab_list.html util.ts -D linux=true -D chromeos_ash=false -D macosx=false
+
+# maybe extract this from BUILD.gn
+python3 html_to_wrapper.py --in_folder in2 --out_folder out --template native --in_files alert_indicator.html alert_indicators.html tab_group.html tab_list.html tab.html
+
+for file in alert_indicator.ts alert_indicators.ts tab_group.ts tab_list.ts tab.ts drag_manager.ts tab_swiper.ts tab_strip.html util.ts; do
+	cp "in2/$file" "out/$file"
 done
 
 cp -r in/alert_indicators out/
@@ -52,10 +62,9 @@ download_gitiles ui/webui/resources/js/focus_outline_manager.ts out/focus_outlin
 download_gitiles ui/webui/resources/js/load_time_data.ts out/load_time_data.ts
 echo "// @ts-nocheck" > out/static_types.ts
 download_gitiles ui/webui/resources/js/static_types.ts out/static_types.ts
-download_gitiles ui/webui/resources/js/util.ts out/util.ts
 
 sed -i '/.*ColorChangeUpdater/d' out/tab_list.ts
 
 copy_files
 
-rm -r in
+rm -r in in2 grit

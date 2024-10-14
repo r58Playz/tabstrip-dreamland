@@ -76,6 +76,8 @@ let TABS_PROXY_SINGLETON: TabsApiProxyImpl | null = null;
 export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 	tabId: number = 0;
 	tabs: Map<number, Tab> = new Map();
+	layout: { [key: string]: string } = {};
+
 	callbackRouter: PageCallbackRouter = new PageCallbackRouter();
 
 	visibleHandler: () => boolean;
@@ -101,6 +103,11 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 
 	dispatch(name: string, data: any) {
 		this.dispatchEvent(new CustomEvent(name, { detail: data }));
+	}
+
+	setLayout(layout: { [key: string]: string }) {
+		this.layout = layout;
+		this.callbackRouter.layoutChanged.notify(layout);
 	}
 
 	addTab(tab: Tab) {
@@ -133,6 +140,7 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 		if (!this.tabs.has(tabId)) throw new Error("Invalid tab.");
 		this.tabs.delete(tabId);
 		this.dispatch("removeTab", { tab: tabId });
+		this.callbackRouter.tabRemoved.notify(tabId);
 	}
 
 	groupTab(tabId: number, groupId: string): void {
@@ -161,7 +169,7 @@ export class TabsApiProxyImpl extends EventTarget implements TabsApiProxy {
 	 * @return Object with CSS variables as keys and pixel lengths as values
 	 */
 	async getLayout(): Promise<{ layout: { [key: string]: string } }> {
-		return { layout: {} };
+		return { layout: this.layout };
 	}
 
 	showEditDialogForGroup(
